@@ -42,8 +42,8 @@ console.log(findNumberOfCompletelyOverlappingAssignments(sectionAssignments));
 
 const findIntersection = (firstArray, secondArray) => {
   const firstSet = new Set(firstArray);
-  const intersection = secondArray.filter(item => firstSet.has(item));
-  return intersection.length;
+  const intersection = secondArray.some(item => firstSet.has(item));
+  return intersection;
 };
 
 const findNumberOfOverlappingAssignments = sectionAssignments => {
