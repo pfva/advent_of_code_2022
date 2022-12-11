@@ -56,3 +56,82 @@ for (const line of commandSections) {
 //Answer:
 // console.log(Math.min(...Object.values(fileTree).filter(size => size >= fileTree['/'] - 40000000)));
 // Took some inspiration from this nice solution: https://github.com/leyanlo/advent-of-code/blob/main/2022/day-07.js
+
+class Node {
+  constructor(key, value = key, parent = null) {
+    this.key = key;
+    this.value = value;
+    this.parent = parent;
+    this.children = [];
+  }
+}
+
+class Tree {
+  constructor(key, value = key) {
+    this.root = new Node(key, value);
+  }
+
+  *traversal(node = this.root) {
+    yield node;
+    if (node.children.length) {
+      for (let child of node.children) {
+        yield* this.traversal(child);
+      }
+    }
+  }
+
+  insert(parentNodeKey, key, value = key) {
+    for (let node of this.traversal()) {
+      if (node.key === parentNodeKey) {
+        node.children.push(new Node(key, value, node));
+        return true;
+      }
+    }
+    return false;
+  }
+
+  find(key) {
+    for (let node of this.traversal()) {
+      if (node.key === key) return node;
+    }
+    return undefined;
+  }
+}
+
+let tree = {};
+const filepath = [];
+
+for (const line of commandSections) {
+  if (line.startsWith('cd')) {
+    const [command] = line.split('\n');
+    const [, arg] = command.split(' ');
+    if (arg === '/') {
+      tree = new Tree(arg, {});
+      filepath.push(arg);
+    }
+    if (arg === '..') {
+      filepath.pop();
+    }
+    if (arg.match(/\w/)) {
+      filepath.push(`${arg}`);
+    }
+  }
+  if (line.startsWith('ls')) {
+    const [, ...list] = line.split('\n');
+    for (const contents of list) {
+      const [size, filename] = contents.split(' ');
+      tree.insert(filepath[filepath.length - 1], filename, size);
+    }
+  }
+}
+
+console.log(tree);
+console.log(
+  [...tree.traversal()]
+    .map(x => Number(x.value))
+    .filter(x => !Number.isNaN(x))
+    .filter(size => size <= 100000)
+    .reduce((sum, num) => sum + num, 0)
+);
+// console.log([...tree.traversal()]);
+// console.log(filepath);
